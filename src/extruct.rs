@@ -29,3 +29,16 @@ pub fn extruct_identifier(input: &str) -> IResult<&str, &str> {
         many0_count(alt((alphanumeric1, tag("_")))),
     ))(input)
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_ext1() {
+        assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn test_ext2() {
+        assert_eq!(1, 1);
+    }
+}

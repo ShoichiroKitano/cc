@@ -48,3 +48,16 @@ pub fn parse_argments(input: &str) -> IResult<&str, Vec<Argment>> {
         .collect();
     Ok((input, argments))
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_parser1() {
+        assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn test_parser2() {
+        assert_eq!(1, 1);
+    }
+}

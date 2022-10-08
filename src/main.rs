@@ -1,7 +1,6 @@
 use std::fs;
-mod ast;
-mod extruct;
-mod parser;
+
+use cc::parser;
 
 fn main() {
     let input = fs::read_to_string("test/add.c").unwrap();
