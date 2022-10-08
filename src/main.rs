@@ -1,7 +1,7 @@
 use std::fs;
-mod parser;
-mod extruct;
 mod ast;
+mod extruct;
+mod parser;
 
 fn main() {
     let input = fs::read_to_string("test/add.c").unwrap();

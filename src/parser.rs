@@ -1,19 +1,16 @@
-use crate::extruct::*;
 use crate::ast::*;
+use crate::extruct::*;
 
-use nom::{
-    character::complete::space1,
-    IResult,
-};
+use nom::{character::complete::space1, IResult};
 
 pub fn parse_compilation_unit(input: &str) -> IResult<&str, CompilationUnit> {
     let (input, function) = parse_function(input)?;
     Ok((
-            input,
-            CompilationUnit {
-                functions: function,
-            },
-            ))
+        input,
+        CompilationUnit {
+            functions: function,
+        },
+    ))
 }
 
 pub fn parse_function(input: &str) -> IResult<&str, Function> {
@@ -22,16 +19,18 @@ pub fn parse_function(input: &str) -> IResult<&str, Function> {
     let (input, function_name) = extruct_identifier(input)?;
     let (input, argments) = parse_argments(input)?;
     Ok((
-            input,
-            Function {
-                name: Identifier{value: function_name.to_string()},
-                return_type: Identifier {
-                    value: ret_type.to_string(),
-                },
-                argments: argments,
-                body: Vec::new(),
+        input,
+        Function {
+            name: Identifier {
+                value: function_name.to_string(),
             },
-            ))
+            return_type: Identifier {
+                value: ret_type.to_string(),
+            },
+            argments: argments,
+            body: Vec::new(),
+        },
+    ))
 }
 
 pub fn parse_argments(input: &str) -> IResult<&str, Vec<Argment>> {
@@ -46,7 +45,6 @@ pub fn parse_argments(input: &str) -> IResult<&str, Vec<Argment>> {
                 value: a.1.to_string(),
             },
         })
-    .collect();
+        .collect();
     Ok((input, argments))
 }
-
