@@ -13,9 +13,20 @@ pub struct Function {
 
 pub trait Statement: std::fmt::Debug {}
 
+#[cfg(test)]
+impl PartialEq<dyn Statement> for dyn Statement {
+    fn eq(&self, other: &Self) -> bool {
+        format!("{:?}", self) == format!("{:?}", other)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct EmptyStatement {}
+impl Statement for EmptyStatement {}
+
 #[derive(Debug)]
-pub struct StatementExpression {}
-impl Statement for StatementExpression {}
+pub struct ReturnStatement {}
+impl Statement for ReturnStatement {}
 
 pub trait Expression: std::fmt::Debug {}
 
