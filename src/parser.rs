@@ -2,12 +2,13 @@ use crate::ast::*;
 use crate::extruct::*;
 
 use nom::{
-    branch::permutation,
-    character::complete::{char, multispace0, space1},
-    combinator::peek,
+    branch::{alt},
+    character::complete::{char, multispace0, space1, multispace1},
+    bytes::complete::tag,
+    combinator::{opt},
     error::VerboseError,
-    multi::separated_list0,
-    sequence::delimited,
+    multi::{many_till},
+    sequence::{delimited, tuple},
     IResult,
 };
 
@@ -21,21 +22,18 @@ pub fn parse_compilation_unit(input: &str) -> IResult<&str, CompilationUnit, Ver
     ))
 }
 
-pub fn parse_function(input: &str) -> IResult<&str, Function, VerboseError<&str>> {
+fn parse_function(input: &str) -> IResult<&str, Function, VerboseError<&str>> {
     let (input, ret_type) = extruct_identifier(input)?;
     let (input, _) = space1(input)?;
     let (input, function_name) = extruct_identifier(input)?;
     let (input, argments) = parse_argments(input)?;
-    let (input, statements) = match delimited(
+    let (input, _statements) = match delimited(
         multispace0,
         delimited(
             char('{'),
             delimited(
                 multispace0,
-                separated_list0(
-                    permutation((multispace0, char(';'), multispace0)),
-                    parse_statement,
-                ),
+                many_till(parse_statement, tag("}")),
                 multispace0,
             ),
             char('}'),
@@ -66,11 +64,38 @@ pub fn parse_function(input: &str) -> IResult<&str, Function, VerboseError<&str>
     ))
 }
 
-fn parse_statement(input: &str) -> IResult<&str, Box<dyn Statement>, VerboseError<&str>> {
-    if let Ok(_) = peek(char::<&str, nom::error::Error<&str>>(';'))(input) {
-        return Ok((input, Box::new(EmptyStatement {})));
+fn parse_statement(input: &str) -> IResult<&str, Statement, VerboseError<&str>> {
+    if let Ok((input, Some(_))) = opt(tag::<&str, &str, nom::error::Error<&str>>(";"))(input) {
+        return Ok((input, Statement::EmptyStatement));
     }
-    Ok((input, Box::new(EmptyStatement {})))
+    if let Ok((input, Some(_))) = opt(
+        tuple((tag::<&str, &str, nom::error::Error<&str>>("return"), multispace1))
+        )(input) {
+        let (input, expression) = parse_expression(input)?;
+        let (input, _) = multispace0(input)?;
+        let (input, _) = tag(";")(input)?;
+        let (input, _) = multispace0(input)?;
+        return Ok((input, Statement::ReturnStatement {expression: expression}));
+    }
+    panic!("parse_statement error!");
+}
+
+fn parse_expression(input: &str) -> IResult<&str, Expression, VerboseError<&str>> {
+    let (input, identifier) = extruct_identifier(input)?;
+    let (input, _) = multispace0(input)?;
+    match opt(alt((char('+'), char('-'))))(input)? {
+        (input, Some(operator)) => {
+            let (input, _) = multispace0(input)?;
+            let (input, operand) = parse_expression(input)?;
+            return Ok((input, Expression::BinaryOperation{
+                operand1: Box::new(Expression::Variable{identifier: Identifier{value: identifier.to_string()}}),
+                operator: Operator::new(operator),
+                operand2: Box::new(operand),
+            }));
+        },
+        _ => {},
+    };
+    Ok((input, Expression::Variable{identifier: Identifier {value: identifier.to_string()}}))
 }
 
 pub fn parse_argments(input: &str) -> IResult<&str, Vec<Argment>, VerboseError<&str>> {
@@ -94,12 +119,44 @@ mod parse_statement {
     use crate::ast::*;
 
     #[test]
-    fn parse_only_semicolon_statement_to_empty_statement() {
+    fn parse_no_expression_before_semicolon() {
         assert_eq!(
             super::parse_statement(";rest code"),
             Ok((
-                ";rest code",
-                Box::new(EmptyStatement {}) as Box<dyn Statement>
+                "rest code",
+                Statement::EmptyStatement,
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_return_with_variable() {
+        assert_eq!(
+            super::parse_statement("return a;rest code"),
+            Ok((
+                "rest code",
+                Statement::ReturnStatement{
+                    expression: Expression::Variable {
+                        identifier: Identifier{value: "a".to_string() }
+                    }
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_return_with_addition() {
+        assert_eq!(
+            super::parse_statement("return a + b;rest code"),
+            Ok((
+                "rest code",
+                Statement::ReturnStatement{
+                    expression: Expression::BinaryOperation {
+                        operand1: Box::new(Expression::Variable{identifier: Identifier{value: "a".to_string() } }),
+                        operator: Operator::Add,
+                        operand2: Box::new(Expression::Variable{identifier: Identifier{value: "b".to_string() } }),
+                    }
+                }
             ))
         );
     }
