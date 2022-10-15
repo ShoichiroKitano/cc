@@ -1,5 +1,5 @@
 use nom::{
-    branch::{alt},
+    branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, alphanumeric1, multispace0, multispace1},
     combinator::recognize,

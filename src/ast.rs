@@ -14,8 +14,8 @@ pub struct Function {
 #[derive(Debug, PartialEq)]
 pub enum Statement {
     EmptyStatement,
-    ExpressionStatement{expression: Expression},
-    ReturnStatement{expression: Expression},
+    ExpressionStatement { expression: Expression },
+    ReturnStatement { expression: Expression },
 }
 
 //pub trait Statement: std::fmt::Debug {}
@@ -77,6 +77,4 @@ pub struct Argment {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Identifier {
-    pub value: String,
-}
+pub struct Identifier(pub String);
