@@ -1,26 +1,26 @@
 use nom::{
-    branch::{alt, permutation},
+    branch::{alt},
     bytes::complete::tag,
-    character::complete::{alpha1, alphanumeric1, char, multispace0, multispace1},
+    character::complete::{alpha1, alphanumeric1, multispace0, multispace1},
     combinator::recognize,
     error::VerboseError,
     multi::{many0_count, separated_list0},
-    sequence::{delimited, pair, separated_pair},
+    sequence::{delimited, pair, separated_pair, tuple},
     IResult,
 };
 
 pub fn extruct_argments(input: &str) -> IResult<&str, Vec<(&str, &str)>, VerboseError<&str>> {
     delimited(
-        char('('),
+        tag("("),
         delimited(
             multispace0,
             separated_list0(
-                permutation((multispace0, char(','), multispace0)),
+                tuple((multispace0, tag(","), multispace0)),
                 separated_pair(extruct_identifier, multispace1, extruct_identifier),
             ),
             multispace0,
         ),
-        char(')'),
+        tag(")"),
     )(input)
 }
 

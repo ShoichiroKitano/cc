@@ -60,10 +60,10 @@ pub enum Operator {
 }
 
 impl Operator {
-    pub fn new(operator: char) -> Self {
+    pub fn new(operator: &str) -> Self {
         match operator {
-            '+' => Operator::Add,
-            '-' => Operator::Sub,
+            "+" => Operator::Add,
+            "-" => Operator::Sub,
             _ => unimplemented!("そんなもんしらん"),
         }
     }
