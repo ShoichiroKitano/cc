@@ -61,15 +61,11 @@ fn parse_statement(input: &str) -> IResult<&str, Statement, VerboseError<&str>> 
         tuple((tag::<&str, &str, nom::error::Error<&str>>("return"), multispace1))
         )(input) {
         let (input, expression) = parse_expression(input)?;
-        let (input, _) = multispace0(input)?;
-        let (input, _) = tag(";")(input)?;
-        let (input, _) = multispace0(input)?;
+        let (input, _) = tuple((multispace0, tag(";"), multispace0))(input)?;
         return Ok((input, Statement::ReturnStatement {expression: expression}));
     }
     if let Ok((input, Some(expression))) = opt(parse_expression)(input) {
-        let (input, _) = multispace0(input)?;
-        let (input, _) = tag(";")(input)?;
-        let (input, _) = multispace0(input)?;
+        let (input, _) = tuple((multispace0, tag(";"), multispace0))(input)?;
         return Ok((input, Statement::ExpressionStatement {expression: expression}));
     }
     panic!("parse_statement error!");
