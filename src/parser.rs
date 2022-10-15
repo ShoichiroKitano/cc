@@ -66,6 +66,12 @@ fn parse_statement(input: &str) -> IResult<&str, Statement, VerboseError<&str>> 
         let (input, _) = multispace0(input)?;
         return Ok((input, Statement::ReturnStatement {expression: expression}));
     }
+    if let Ok((input, Some(expression))) = opt(parse_expression)(input) {
+        let (input, _) = multispace0(input)?;
+        let (input, _) = tag(";")(input)?;
+        let (input, _) = multispace0(input)?;
+        return Ok((input, Statement::ExpressionStatement {expression: expression}));
+    }
     panic!("parse_statement error!");
 }
 
@@ -77,14 +83,14 @@ fn parse_expression(input: &str) -> IResult<&str, Expression, VerboseError<&str>
             let (input, _) = multispace0(input)?;
             let (input, operand) = parse_expression(input)?;
             return Ok((input, Expression::BinaryOperation{
-                operand1: Box::new(Expression::Variable{identifier: Identifier{value: identifier.to_string()}}),
+                operand1: Box::new(Expression::Identifier(Identifier{value: identifier.to_string()})),
                 operator: Operator::new(operator),
                 operand2: Box::new(operand),
             }));
         },
         _ => {},
     };
-    Ok((input, Expression::Variable{identifier: Identifier {value: identifier.to_string()}}))
+    Ok((input, Expression::Identifier(Identifier {value: identifier.to_string()})))
 }
 
 // parse "(argment list)" to argmensts
@@ -126,9 +132,7 @@ mod parse_statement {
             Ok((
                 "rest code",
                 Statement::ReturnStatement{
-                    expression: Expression::Variable {
-                        identifier: Identifier{value: "a".to_string() }
-                    }
+                    expression: Expression::Identifier(Identifier{value: "a".to_string() }),
                 }
             ))
         );
@@ -142,9 +146,9 @@ mod parse_statement {
                 "rest code",
                 Statement::ReturnStatement{
                     expression: Expression::BinaryOperation {
-                        operand1: Box::new(Expression::Variable{identifier: Identifier{value: "a".to_string() } }),
+                        operand1: Box::new(Expression::Identifier(Identifier{value: "a".to_string() })),
                         operator: Operator::Add,
-                        operand2: Box::new(Expression::Variable{identifier: Identifier{value: "b".to_string() } }),
+                        operand2: Box::new(Expression::Identifier(Identifier{value: "b".to_string() })),
                     }
                 }
             ))
@@ -159,10 +163,23 @@ mod parse_statement {
                 "rest code",
                 Statement::ReturnStatement{
                     expression: Expression::BinaryOperation {
-                        operand1: Box::new(Expression::Variable{identifier: Identifier{value: "a".to_string() } }),
+                        operand1: Box::new(Expression::Identifier(Identifier{value: "a".to_string() })),
                         operator: Operator::Sub,
-                        operand2: Box::new(Expression::Variable{identifier: Identifier{value: "b".to_string() } }),
+                        operand2: Box::new(Expression::Identifier(Identifier{value: "b".to_string() })),
                     }
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_expression_statement() {
+        assert_eq!(
+            super::parse_statement("a;rest code"),
+            Ok((
+                "rest code",
+                Statement::ExpressionStatement{
+                    expression: Expression::Identifier(Identifier{value: "a".to_string() })
                 }
             ))
         );

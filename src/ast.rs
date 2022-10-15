@@ -14,6 +14,7 @@ pub struct Function {
 #[derive(Debug, PartialEq)]
 pub enum Statement {
     EmptyStatement,
+    ExpressionStatement{expression: Expression},
     ReturnStatement{expression: Expression},
 }
 
@@ -36,7 +37,7 @@ pub enum Statement {
 
 #[derive(Debug, PartialEq)]
 pub enum Expression {
-    Variable { identifier: Identifier },
+    Identifier(Identifier),
     BinaryOperation {
         operand1: Box<Expression>,
         operator: Operator,
@@ -68,12 +69,6 @@ impl Operator {
         }
     }
 }
-
-//#[derive(Debug)]
-//pub struct Variable {
-//    pub name: Identifier,
-//}
-//impl Expression for Variable {}
 
 #[derive(Debug)]
 pub struct Argment {
