@@ -15,4 +15,7 @@ pub fn compile(source_file: &str) {
         },
         Err(_) => panic!("compile error"),
     };
+    let mut builder = Builder::new(1000);
+    compilation_unint.write_assembly(&mut builder);
+    println!("{}", builder.string().unwrap());
 }

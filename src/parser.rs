@@ -17,12 +17,12 @@ pub fn parse_compilation_unit(input: &str) -> IResult<&str, CompilationUnit, Ver
     Ok((
         input,
         CompilationUnit {
-            functions: function,
+            functions: vec![function],
         },
     ))
 }
 
-fn parse_function(input: &str) -> IResult<&str, Function, VerboseError<&str>> {
+fn parse_function(input: &str) -> IResult<&str, FunctionDeclaration, VerboseError<&str>> {
     let (input, ret_type) = extruct_identifier(input)?;
     let (input, _) = multispace1(input)?; // type␣name
     let (input, function_name) = extruct_identifier(input)?;
@@ -40,7 +40,7 @@ fn parse_function(input: &str) -> IResult<&str, Function, VerboseError<&str>> {
 
     Ok((
         input,
-        Function {
+        FunctionDeclaration {
             name: Identifier(function_name.to_string()),
             return_type: Identifier(ret_type.to_string()),
             argments: argments,
